@@ -1,5 +1,5 @@
 // We avoid relying on anything else in the crate, apart from the `Debug` trait.
-use crate::fmt::Debug;
+use std::fmt::Debug;
 use std::cmp::Ordering;
 use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 

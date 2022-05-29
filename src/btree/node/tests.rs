@@ -1,7 +1,7 @@
 use super::super::navigate;
 use super::*;
-use crate::fmt::Debug;
-use crate::string::String;
+use std::fmt::Debug;
+use std::string::String;
 
 impl<'a, K: 'a, V: 'a> NodeRef<marker::Immut<'a>, K, V, marker::LeafOrInternal> {
     // Asserts that the back pointer in each reachable node points to its parent.

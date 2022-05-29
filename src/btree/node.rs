@@ -36,8 +36,8 @@ use core::mem::{self, MaybeUninit};
 use core::ptr::{self, NonNull};
 use core::slice::SliceIndex;
 
-use crate::alloc::{Allocator, Global, Layout};
-use crate::boxed::Box;
+use std::alloc::{Allocator, Global, Layout};
+use std::boxed::Box;
 
 const B: usize = 6;
 pub const CAPACITY: usize = 2 * B - 1;

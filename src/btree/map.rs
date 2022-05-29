@@ -1,4 +1,4 @@
-use crate::vec::Vec;
+use std::vec::Vec;
 use core::borrow::Borrow;
 use core::cmp::Ordering;
 use core::fmt::{self, Debug};
