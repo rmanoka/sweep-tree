@@ -35,7 +35,7 @@ impl<K: Debug + Ord, V: Debug> Debug for Entry<'_, K, V> {
 pub struct VacantEntry<'a, K: 'a, V: 'a> {
     pub(super) key: K,
     /// `None` for a (empty) map without root
-    pub(super) handle: Option<Handle<NodeRef<marker::Mut<'a>, K, V, marker::Leaf>, marker::Edge>>,
+    pub(crate) handle: Option<Handle<NodeRef<marker::Mut<'a>, K, V, marker::Leaf>, marker::Edge>>,
     pub(super) dormant_map: DormantMutRef<'a, BTreeMap<K, V>>,
 
     // Be invariant in `K` and `V`
@@ -51,7 +51,7 @@ impl<K: Debug + Ord, V> Debug for VacantEntry<'_, K, V> {
 /// A view into an occupied entry in a `BTreeMap`.
 /// It is part of the [`Entry`] enum.
 pub struct OccupiedEntry<'a, K: 'a, V: 'a> {
-    pub(super) handle: Handle<NodeRef<marker::Mut<'a>, K, V, marker::LeafOrInternal>, marker::KV>,
+    pub(crate) handle: Handle<NodeRef<marker::Mut<'a>, K, V, marker::LeafOrInternal>, marker::KV>,
     pub(super) dormant_map: DormantMutRef<'a, BTreeMap<K, V>>,
 
     // Be invariant in `K` and `V`

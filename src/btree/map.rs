@@ -160,7 +160,7 @@ pub(super) const MIN_LEN: usize = node::MIN_LEN_AFTER_SPLIT;
 /// *stat += random_stat_buff();
 /// ```
 pub struct BTreeMap<K, V> {
-    root: Option<Root<K, V>>,
+    pub(super) root: Option<Root<K, V>>,
     length: usize,
 }
 
@@ -574,29 +574,6 @@ impl<K, V> BTreeMap<K, V> {
         }
     }
 
-    pub fn get_around<Q: ?Sized>(&self, key: &Q) -> (Option<(&K, &V)>, Option<(&K, &V)>)
-    where
-        K: Borrow<Q> + Ord,
-        Q: Ord,
-    {
-        let root_node = if let Some(root) = self.root.as_ref() {
-            root.reborrow()
-        } else {
-            return (None, None);
-        };
-        let (prev, next) = match root_node.search_tree(key) {
-            Found(kv_handle) => {
-                let prev = kv_handle.next_back_leaf_edge();
-                let next = kv_handle.next_leaf_edge();
-                (prev, next)
-            },
-            GoDown(handle) => (handle, handle),
-        };
-        (
-            prev.next_back_kv().ok().map(|k| k.into_kv()),
-            next.next_kv().ok().map(|k| k.into_kv()),
-        )
-    }
     /// Returns the key-value pair corresponding to the supplied key. The supplied key may be any borrowed form of the map's key type, but the ordering
     /// on the borrowed form *must* match the ordering on the key type.
     ///

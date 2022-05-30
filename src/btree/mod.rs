@@ -23,3 +23,5 @@ trait Recover<Q: ?Sized> {
 
 #[cfg(test)]
 mod testing;
+
+pub mod hinting;

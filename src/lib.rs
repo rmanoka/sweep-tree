@@ -13,8 +13,7 @@
 )]
 
 mod btree;
-pub use btree::map::BTreeMap as SweepTreeMap;
-pub use btree::set::BTreeSet as SweepTreeSet;
+pub use btree::hinting::BTreeWithHint as SweepTreeMap;
 
 #[cfg(test)]
 mod tests {
