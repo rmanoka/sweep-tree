@@ -72,7 +72,6 @@ use super::Recover;
 /// let set = BTreeSet::from([1, 2, 3]);
 /// ```
 #[derive(Hash, PartialEq, Eq, Ord, PartialOrd)]
-#[cfg_attr(not(test), rustc_diagnostic_item = "BTreeSet")]
 pub struct BTreeSet<T> {
     map: BTreeMap<T, ()>,
 }
@@ -245,7 +244,6 @@ impl<T> BTreeSet<T> {
     ///
     /// let mut set: BTreeSet<i32> = BTreeSet::new();
     /// ```
-    #[rustc_const_unstable(feature = "const_btree_new", issue = "71835")]
     #[must_use]
     pub const fn new() -> BTreeSet<T> {
         BTreeSet { map: BTreeMap::new() }
@@ -657,7 +655,6 @@ impl<T> BTreeSet<T> {
     /// assert_eq!(set.first(), Some(&1));
     /// ```
     #[must_use]
-    #[unstable(feature = "map_first_last", issue = "62924")]
     pub fn first(&self) -> Option<&T>
     where
         T: Ord,
@@ -684,7 +681,6 @@ impl<T> BTreeSet<T> {
     /// assert_eq!(set.last(), Some(&2));
     /// ```
     #[must_use]
-    #[unstable(feature = "map_first_last", issue = "62924")]
     pub fn last(&self) -> Option<&T>
     where
         T: Ord,
@@ -709,7 +705,6 @@ impl<T> BTreeSet<T> {
     /// }
     /// assert!(set.is_empty());
     /// ```
-    #[unstable(feature = "map_first_last", issue = "62924")]
     pub fn pop_first(&mut self) -> Option<T>
     where
         T: Ord,
@@ -734,7 +729,6 @@ impl<T> BTreeSet<T> {
     /// }
     /// assert!(set.is_empty());
     /// ```
-    #[unstable(feature = "map_first_last", issue = "62924")]
     pub fn pop_last(&mut self) -> Option<T>
     where
         T: Ord,
@@ -964,7 +958,6 @@ impl<T> BTreeSet<T> {
     /// assert_eq!(evens.into_iter().collect::<Vec<_>>(), vec![0, 2, 4, 6]);
     /// assert_eq!(odds.into_iter().collect::<Vec<_>>(), vec![1, 3, 5, 7]);
     /// ```
-    #[unstable(feature = "btree_drain_filter", issue = "70530")]
     pub fn drain_filter<'a, F>(&'a mut self, pred: F) -> DrainFilter<'a, T, F>
     where
         T: Ord,
@@ -1018,7 +1011,6 @@ impl<T> BTreeSet<T> {
     /// assert_eq!(v.len(), 1);
     /// ```
     #[must_use]
-    #[rustc_const_unstable(feature = "const_btree_new", issue = "71835")]
     pub const fn len(&self) -> usize {
         self.map.len()
     }
@@ -1036,7 +1028,6 @@ impl<T> BTreeSet<T> {
     /// assert!(!v.is_empty());
     /// ```
     #[must_use]
-    #[rustc_const_unstable(feature = "const_btree_new", issue = "71835")]
     pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -1112,7 +1103,6 @@ impl<'a, T> IntoIterator for &'a BTreeSet<T> {
 }
 
 /// An iterator produced by calling `drain_filter` on BTreeSet.
-#[unstable(feature = "btree_drain_filter", issue = "70530")]
 pub struct DrainFilter<'a, T, F>
 where
     T: 'a,
@@ -1122,7 +1112,6 @@ where
     inner: super::map::DrainFilterInner<'a, T, ()>,
 }
 
-#[unstable(feature = "btree_drain_filter", issue = "70530")]
 impl<T, F> Drop for DrainFilter<'_, T, F>
 where
     F: FnMut(&T) -> bool,
@@ -1132,7 +1121,6 @@ where
     }
 }
 
-#[unstable(feature = "btree_drain_filter", issue = "70530")]
 impl<T, F> fmt::Debug for DrainFilter<'_, T, F>
 where
     T: fmt::Debug,
@@ -1143,7 +1131,6 @@ where
     }
 }
 
-#[unstable(feature = "btree_drain_filter", issue = "70530")]
 impl<'a, T, F> Iterator for DrainFilter<'_, T, F>
 where
     F: 'a + FnMut(&T) -> bool,
@@ -1161,7 +1148,6 @@ where
     }
 }
 
-#[unstable(feature = "btree_drain_filter", issue = "70530")]
 impl<T, F> FusedIterator for DrainFilter<'_, T, F> where F: FnMut(&T) -> bool {}
 
 impl<T: Ord> Extend<T> for BTreeSet<T> {

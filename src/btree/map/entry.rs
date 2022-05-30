@@ -13,13 +13,12 @@ use Entry::*;
 /// This `enum` is constructed from the [`entry`] method on [`BTreeMap`].
 ///
 /// [`entry`]: BTreeMap::entry
-#[cfg_attr(not(test), rustc_diagnostic_item = "BTreeEntry")]
 pub enum Entry<'a, K: 'a, V: 'a> {
     /// A vacant entry.
-    Vacant(#[stable(feature = "rust1", since = "1.0.0")] VacantEntry<'a, K, V>),
+    Vacant(VacantEntry<'a, K, V>),
 
     /// An occupied entry.
-    Occupied(#[stable(feature = "rust1", since = "1.0.0")] OccupiedEntry<'a, K, V>),
+    Occupied(OccupiedEntry<'a, K, V>),
 }
 
 impl<K: Debug + Ord, V: Debug> Debug for Entry<'_, K, V> {
@@ -68,7 +67,6 @@ impl<K: Debug + Ord, V: Debug> Debug for OccupiedEntry<'_, K, V> {
 /// The error returned by [`try_insert`](BTreeMap::try_insert) when the key already exists.
 ///
 /// Contains the occupied entry, and the value that was not inserted.
-#[unstable(feature = "map_try_insert", issue = "82766")]
 pub struct OccupiedError<'a, K: 'a, V: 'a> {
     /// The entry in the map that was already occupied.
     pub entry: OccupiedEntry<'a, K, V>,
@@ -76,7 +74,6 @@ pub struct OccupiedError<'a, K: 'a, V: 'a> {
     pub value: V,
 }
 
-#[unstable(feature = "map_try_insert", issue = "82766")]
 impl<K: Debug + Ord, V: Debug> Debug for OccupiedError<'_, K, V> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("OccupiedError")
@@ -87,7 +84,6 @@ impl<K: Debug + Ord, V: Debug> Debug for OccupiedError<'_, K, V> {
     }
 }
 
-#[unstable(feature = "map_try_insert", issue = "82766")]
 impl<'a, K: Debug + Ord, V: Debug> fmt::Display for OccupiedError<'a, K, V> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(

@@ -383,7 +383,7 @@ impl<BorrowType: marker::BorrowType, K, V>
     /// Given a leaf edge handle, returns [`Result::Ok`] with a handle to the neighboring KV
     /// on the left side, which is either in the same leaf node or in an ancestor node.
     /// If the leaf edge is the first one in the tree, returns [`Result::Err`] with the root node.
-    fn next_back_kv(
+    pub fn next_back_kv(
         self,
     ) -> Result<
         Handle<NodeRef<BorrowType, K, V, marker::LeafOrInternal>, marker::KV>,
@@ -692,7 +692,7 @@ impl<BorrowType: marker::BorrowType, K, V>
     }
 
     /// Returns the leaf edge closest to a KV for backward navigation.
-    fn next_back_leaf_edge(self) -> Handle<NodeRef<BorrowType, K, V, marker::Leaf>, marker::Edge> {
+    pub fn next_back_leaf_edge(self) -> Handle<NodeRef<BorrowType, K, V, marker::Leaf>, marker::Edge> {
         match self.force() {
             Leaf(leaf_kv) => leaf_kv.left_edge(),
             Internal(internal_kv) => {
