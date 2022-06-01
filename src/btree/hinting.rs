@@ -1,6 +1,7 @@
-use std::{borrow::Borrow, cell::Cell};
+use std::{borrow::Borrow, cell::Cell, marker::PhantomData};
 
 use super::{
+    borrow::DormantMutRef,
     map::*,
     node::{
         marker::{Immut, Leaf, LeafOrInternal},
@@ -24,7 +25,7 @@ impl<'a, K: 'a, V: 'a> NodeRef<Immut<'a>, K, V, LeafOrInternal> {
     }
 }
 impl<K, V> NodeRef<Hint, K, V, LeafOrInternal> {
-    unsafe fn as_ref<'a>(self) -> NodeRef<Immut<'a>, K, V, LeafOrInternal>  {
+    unsafe fn as_ref<'a>(self) -> NodeRef<Immut<'a>, K, V, LeafOrInternal> {
         std::mem::transmute(self)
     }
 }
@@ -45,9 +46,7 @@ impl<K, V> Default for BTreeWithHint<K, V> {
 
 impl<K, V> BTreeWithHint<K, V> {
     unsafe fn get_hint(&self) -> Option<NodeRef<Immut, K, V, LeafOrInternal>> {
-        unsafe {
-            self.hint.get().map(|hint| hint.as_ref())
-        }
+        unsafe { self.hint.get().map(|hint| hint.as_ref()) }
     }
 
     fn set_hint<'a>(&self, hint: NodeRef<Hint, K, V, LeafOrInternal>)
@@ -73,6 +72,7 @@ impl<K, V> BTreeWithHint<K, V> {
     {
         use SearchResult::*;
         let mut root_node =
+            // self.map.root.as_ref()?.reborrow();
             unsafe { self.get_hint() }.or_else(|| Some(self.map.root.as_ref()?.reborrow()))?;
 
         loop {
@@ -125,9 +125,7 @@ impl<K, V> BTreeWithHint<K, V> {
     {
         use SearchResult::*;
         let prev = match self.search_tree(key) {
-            Some(Found(kv_handle)) => {
-                kv_handle.next_back_leaf_edge()
-            }
+            Some(Found(kv_handle)) => kv_handle.next_back_leaf_edge(),
             Some(GoDown(handle)) => handle,
             None => return None,
         };
@@ -141,9 +139,7 @@ impl<K, V> BTreeWithHint<K, V> {
     {
         use SearchResult::*;
         let next = match self.search_tree(key) {
-            Some(Found(kv_handle)) => {
-                kv_handle.next_leaf_edge()
-            }
+            Some(Found(kv_handle)) => kv_handle.next_leaf_edge(),
             Some(GoDown(handle)) => handle,
             None => return None,
         };
@@ -160,15 +156,20 @@ impl<K, V> BTreeWithHint<K, V> {
             Occupied(mut entry) => {
                 new_hint = Some(entry.handle.reborrow().into_node().as_hint());
                 Some(entry.insert(value))
-            },
+            }
             Vacant(entry) => {
-                new_hint = entry.handle.as_ref().map(|h| h.reborrow().into_node().forget_type().as_hint());
+                new_hint = entry
+                    .handle
+                    .as_ref()
+                    .map(|h| h.reborrow().into_node().forget_type().as_hint());
                 entry.insert(value);
                 None
             }
         };
         if let Some(hint) = new_hint {
-            unsafe { self.set_hint(hint); }
+            unsafe {
+                self.set_hint(hint);
+            }
         }
         output
     }
@@ -180,6 +181,47 @@ impl<K, V> BTreeWithHint<K, V> {
     {
         self.clear_hint();
         self.map.remove(key)
+    }
+
+    pub fn remove_and_return_around<Q: ?Sized>(&mut self, key: &Q) -> (Option<K>, Option<K>)
+    where
+        K: Borrow<Q> + Ord + Clone,
+        Q: Ord,
+    {
+        let (map, dormant_map) = DormantMutRef::new(&mut self.map);
+        let root = match map.root.as_mut() {
+            Some(e) => e,
+            None => panic!("could not find element to remove!"),
+        };
+        use SearchResult::*;
+        let root_node = root.borrow_mut();
+        match root_node.search_tree(key) {
+            Found(handle) => {
+                let prev = handle
+                    .reborrow()
+                    .next_back_leaf_edge()
+                    .next_back_kv()
+                    .ok()
+                    .map(|k| k.into_kv().0)
+                    .cloned();
+                let next = handle
+                    .reborrow()
+                    .next_leaf_edge()
+                    .next_kv()
+                    .ok()
+                    .map(|k| k.into_kv().0)
+                    .cloned();
+                OccupiedEntry {
+                    handle,
+                    dormant_map,
+                    _marker: PhantomData,
+                }
+                .remove_entry();
+                self.clear_hint();
+                (prev, next)
+            }
+            GoDown(_) => panic!("could not find element to remove!"),
+        }
     }
 
     pub fn iter(&self) -> Iter<'_, K, V> {

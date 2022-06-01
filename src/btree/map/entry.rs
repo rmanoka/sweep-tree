@@ -52,10 +52,10 @@ impl<K: Debug + Ord, V> Debug for VacantEntry<'_, K, V> {
 /// It is part of the [`Entry`] enum.
 pub struct OccupiedEntry<'a, K: 'a, V: 'a> {
     pub(crate) handle: Handle<NodeRef<marker::Mut<'a>, K, V, marker::LeafOrInternal>, marker::KV>,
-    pub(super) dormant_map: DormantMutRef<'a, BTreeMap<K, V>>,
+    pub(crate) dormant_map: DormantMutRef<'a, BTreeMap<K, V>>,
 
     // Be invariant in `K` and `V`
-    pub(super) _marker: PhantomData<&'a mut (K, V)>,
+    pub(crate) _marker: PhantomData<&'a mut (K, V)>,
 }
 
 impl<K: Debug + Ord, V: Debug> Debug for OccupiedEntry<'_, K, V> {
