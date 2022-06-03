@@ -25,3 +25,4 @@ trait Recover<Q: ?Sized> {
 mod testing;
 
 pub mod hinting;
+pub mod cursor;

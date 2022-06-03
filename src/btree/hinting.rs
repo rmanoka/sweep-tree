@@ -8,6 +8,7 @@ use super::{
         NodeRef,
     },
     search::SearchResult,
+    cursor::Cursor,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -78,12 +79,15 @@ impl<K, V> BTreeWithHint<K, V> {
         loop {
             match root_node.search_tree(key) {
                 Found(handle) => {
-                    unsafe {
-                        self.set_hint(handle.into_node().as_hint());
-                    }
+                    self.set_hint(handle.into_node().as_hint());
                     return Some(Found(handle));
                 }
                 GoDown(handle) => {
+                    self.set_hint(handle.into_node().forget_type().as_hint());
+                    let node_len = handle.into_node().len();
+                    if handle.idx() > 0 && handle.idx() < node_len {
+                        return Some(GoDown(handle));
+                    }
                     root_node = match root_node.ascend().ok() {
                         Some(parent) => parent.into_node().forget_type(),
                         None => return Some(GoDown(handle)),
@@ -226,6 +230,39 @@ impl<K, V> BTreeWithHint<K, V> {
 
     pub fn iter(&self) -> Iter<'_, K, V> {
         self.map.iter()
+    }
+
+    pub fn cursor_before<Q: ?Sized>(&self, key: &Q) -> Option<Cursor<K, V>>
+    where
+        K: Borrow<Q> + Ord,
+        Q: Ord,
+    {
+        use SearchResult::*;
+        let prev = match self.search_tree(key) {
+            Some(Found(kv_handle)) => {
+                let prev = kv_handle.next_back_leaf_edge();
+                prev
+            }
+            Some(GoDown(handle)) => handle,
+            None => return None,
+        };
+        prev.next_back_kv().ok().map(|k| Cursor::new(k))
+    }
+    pub fn cursor_after<Q: ?Sized>(&self, key: &Q) -> Option<Cursor<K, V>>
+    where
+        K: Borrow<Q> + Ord,
+        Q: Ord,
+    {
+        use SearchResult::*;
+        let next = match self.search_tree(key) {
+            Some(Found(kv_handle)) => {
+                let next = kv_handle.next_leaf_edge();
+                next
+            }
+            Some(GoDown(handle)) => handle,
+            None => return None,
+        };
+        next.next_kv().ok().map(|k| Cursor::new(k))
     }
 }
 

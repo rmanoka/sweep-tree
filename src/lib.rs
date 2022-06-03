@@ -14,6 +14,7 @@
 
 mod btree;
 pub use btree::hinting::BTreeWithHint as SweepTreeMap;
+pub use btree::cursor::Cursor;
 
 #[cfg(test)]
 mod tests {
